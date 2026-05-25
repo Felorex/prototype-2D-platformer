@@ -8,6 +8,7 @@
 #include "TileMap.h"
 #include "Camera.h"
 #include "Enemy.h"
+#include "Dog.h"
 #include "DynamicObject.h"
 #include "InteractionSystem.h"
 
