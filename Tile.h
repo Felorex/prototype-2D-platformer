@@ -5,7 +5,9 @@ enum TileType {
 	WALLS,
 	CRAWLWAY,
 	EMPTY,
-	DOGHOUSE
+	DOGHOUSE,
+	DOGHOUSE_INSIDE,
+	DOGHOUSE_ROOF
 };
 
 class Tile {
