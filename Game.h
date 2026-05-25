@@ -25,10 +25,10 @@ public:
 	void drawGame(sf::RenderWindow& window);
 	void play();
 	void update(float dt);
-	bool canMoveLeft(Entity& entity);
+	bool canMoveLeft(Entity& entity, float dt);
 	bool canMoveRight(Entity& entity, float dt);
 	bool canMoveRightObject(DynamicObject& object, float dt);
-	bool canMoveLeftObject(DynamicObject& object);
+	bool canMoveLeftObject(DynamicObject& object, float dt);
 	bool canJump();
 	void creep();
 	bool canCreep();
@@ -36,19 +36,27 @@ public:
 	void checkCollision(Entity& entity);
 	void checkCollisionForObjects(Entity& e1, Entity& e2);
 	bool canInteraction(Player& player,DynamicObject& object);
-	bool canCrawlThrough();
-	bool canStandUp(Player& player);
+	bool canStandUp(Entity& entity);
 
+	void checkDogEvent();
+	bool InsideDoghouse(Entity& entity);
+	void autoDogEvent(float dt);
+
+	void dogIsBarking();
+
+	void creepLogic();
 private:
 	GameState state;
-	Entity entity;
 	Player player;
 	Enemy enemy;
 	DynamicObject object;
 	TileMap map;
 	Camera camera;
 	InteractionSystem interact;
+	Dog dog;
 	sf::Clock deltaClock;
 
+	bool intro;
+	bool dogEvent;
 };
 #endif // !GAME_H
