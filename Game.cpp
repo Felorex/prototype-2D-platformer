@@ -4,6 +4,8 @@
 
 Game::Game(): player(), map(64,30) {
 	state = INTRO;
+	intro = true;
+	dogEvent = false;
 	map.floor();
 	map.walls();
 	map.platform(20, 15, 2, 13);
@@ -16,20 +18,25 @@ Game::Game(): player(), map(64,30) {
 	//map.platform(14, 18, 2, 1);
 }
 void Game::autoMovePlayer(float dt) {
-	if (canMoveRight(player,dt)) {
-		player.move(player.getNormalSpeed() * dt);
-		Position p = player.getPosition();
-		if (p.x >= 500) {
-			player.move(0.f);
-			state = PLAY;
+	if (intro) {
+		std::cout << "wr\n";
+		if (canMoveRight(player, dt)) {
+			player.move(player.getSpeed() * dt); 
+			Position p = player.getPosition();
+			if (p.x >= 500) {
+				player.move(0.f);
+				intro = false;
+				state = PLAY;
+				std::cout << "intro " << intro << std::endl;
+			}
 		}
-	}
+	}	
 }
 void Game::input(float dt) {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {		
 		if (canInteraction(player, object) && canMoveRightObject(object, dt) && canMoveRight(player, dt)) {
-			player.move(player.getNormalSpeed() * dt);
-			object.move(player.getNormalSpeed() * dt);
+			player.move(player.getSpeed() * dt);
+			object.move(player.getSpeed() * dt);
 		}
 		else {
 			if (canInteraction(player, object) && !canMoveRightObject(object, dt)) {
@@ -37,40 +44,39 @@ void Game::input(float dt) {
 			}
 			else {
 				if (canMoveRight(player, dt)) {
-					player.move(player.getNormalSpeed() * dt);
+					player.move(player.getSpeed() * dt);
 				}				
 			}
 		}
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
 		
-		if (canInteraction(player, object) && canMoveLeftObject(object) && canMoveLeft(player)) {
-			player.move(-player.getNormalSpeed() * dt);
-			object.move(-player.getNormalSpeed() * dt);
+		if (canInteraction(player, object) && canMoveLeftObject(object, dt) && canMoveLeft(player, dt)) {
+			player.move(-player.getSpeed() * dt);
+			object.move(-player.getSpeed() * dt);
 		}
 		else {
-			if (canInteraction(player, object) && !canMoveLeftObject(object)) {
+			if (canInteraction(player, object) && !canMoveLeftObject(object, dt)) {
 				player.move(0.f);
 			}
 			else {
-				if (canMoveLeft(player)) {
-					player.move(-player.getNormalSpeed() * dt);
+				if (canMoveLeft(player, dt)) {
+					player.move(-player.getSpeed() * dt);
 				}	
 			}
 		}
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && canJump()) {
 		player.jump();
-	}
+	}	
+}
+void Game::creepLogic() {
 	if (canCreep() || !canStandUp(player)) {
 		player.setIsCreeping(true);
-		creep();
 	}
 	else {
 		player.setIsCreeping(false);
-		creep();
 	}
-	
 }
 void Game::drawGame(sf::RenderWindow& window) {
 	window.clear();
@@ -79,22 +85,29 @@ void Game::drawGame(sf::RenderWindow& window) {
 	object.draw(window);
 	player.draw(window);
 	enemy.draw(window);	
+	dog.draw(window);
 
 	window.display();
 }
 void Game::update(float dt) {
-	entity.previousPos = entity.getPosition();
 	player.update(dt);
 	enemy.update(dt);
 	object.update(dt);
+	dog.update(dt);
 	checkCollision(player);
 	checkCollision(enemy);
 	checkCollision(object);
-	canMoveLeft(enemy);
+	checkCollision(dog);
+	canMoveLeft(enemy, dt);
 	canMoveRight(enemy, dt);
-	canMoveLeft(object);
+	canMoveLeft(object, dt);
 	canMoveRight(object, dt);
+	canMoveLeft(dog, dt);
+	canMoveRight(dog, dt);
 
+	creepLogic();
+	checkDogEvent();
+	dogIsBarking();
 	checkCollisionForObjects(player, object);
 	camera.updateCamera(player.getPosition(), map);
 }
@@ -110,7 +123,7 @@ void Game::checkCollision(Entity& entity) {
 	TileType Left = map.getType(leftTileX, tileY);
 	TileType Right = map.getType(rightTileX, tileY);
 
-	bool floor = (insideLeft || insideRight) && (Left == WALLS || Right == WALLS) || (Left == DOGHOUSE || Right == DOGHOUSE);
+	bool floor = (insideLeft || insideRight) && (Left == WALLS || Right == WALLS) || (Left == DOGHOUSE_ROOF || Right == DOGHOUSE_ROOF);
 
 	if (floor) {
 		entity.setPosition(p.x, top - s.height);
@@ -151,13 +164,13 @@ void Game::checkCollisionForObjects(Entity& e1, Entity& e2) {
 		e1.setOnGround(true);
 	}
 }
-bool Game::canMoveLeft(Entity& entity) {
+bool Game::canMoveLeft(Entity& entity, float dt) {
 	Position p = entity.getPosition();
 	Size s = entity.getSize();
-	float dx = -2.f;
-	int tileX = (p.x + dx) / map.TILE_SIZE;
+	float dx = -entity.getSpeed() * dt;
+	int tileX = (p.x + dx - 1) / map.TILE_SIZE;
 	int tileTop = (p.y - 1) / map.TILE_SIZE;
-	int tileBottom = (p.y + s.height - 1) / map.TILE_SIZE;
+	int tileBottom = (p.y + s.height - 2) / map.TILE_SIZE;
 
 	bool insideTop = map.inside(tileX, tileTop);
 	bool insideBottom = map.inside(tileX, tileBottom);
@@ -165,14 +178,16 @@ bool Game::canMoveLeft(Entity& entity) {
 	TileType top = map.getType(tileX, tileTop);
 	TileType bottom = map.getType(tileX, tileBottom);
 
-	bool wall = insideTop && (top == WALLS || bottom == WALLS);
-	bool crawlway = insideBottom && (top == CRAWLWAY || bottom == CRAWLWAY);
-	bool doghouse = insideTop && (top == DOGHOUSE || bottom == DOGHOUSE);
+	bool wall = (insideTop || insideBottom) && (top == WALLS || bottom == WALLS);
+	bool crawlway = (insideTop || insideBottom) && (top == CRAWLWAY || bottom == CRAWLWAY);
+	bool doghouse = (insideTop || insideBottom) && (top == DOGHOUSE || bottom == DOGHOUSE || top == DOGHOUSE_ROOF || bottom == DOGHOUSE_ROOF);
+	bool doghouseInside = (insideTop && insideBottom) && (top == DOGHOUSE_INSIDE || bottom == DOGHOUSE_INSIDE);
+
 
 	if (wall || doghouse) {
 		return false;
 	}
-	if (crawlway && !player.getIsCreeping()) {
+	if ((crawlway || doghouseInside) && !entity.getIsCreeping()) {
 		return false;
 	}
 	return true;
@@ -180,7 +195,7 @@ bool Game::canMoveLeft(Entity& entity) {
 bool Game::canMoveRight(Entity& entity, float dt) {
 	Position p = entity.getPosition();
 	Size s = entity.getSize();
-	float dx = player.getNormalSpeed() * dt;
+	float dx = entity.getSpeed() * dt;
 	int tileX = (p.x + s.width + dx) / map.TILE_SIZE;
 	int tileTop = (p.y - 1) / map.TILE_SIZE;
 	int tileBottom = (p.y + s.height - 2) / map.TILE_SIZE;
@@ -191,13 +206,14 @@ bool Game::canMoveRight(Entity& entity, float dt) {
 	TileType bottom = map.getType(tileX, tileBottom);
 
 	bool wall = (insideTop || insideBottom) && (top == WALLS || bottom == WALLS);
-	bool crawlway = insideBottom && (top == CRAWLWAY || bottom == CRAWLWAY);
-	bool doghouse = insideTop && (top == DOGHOUSE || bottom == DOGHOUSE);
+	bool crawlway = (insideTop || insideBottom) && (top == CRAWLWAY || bottom == CRAWLWAY);
+	bool doghouse = (insideTop || insideBottom) && (top == DOGHOUSE || bottom == DOGHOUSE || top == DOGHOUSE_ROOF || bottom == DOGHOUSE_ROOF);
+	bool doghouseInside = (insideTop && insideBottom) && (top == DOGHOUSE_INSIDE || bottom == DOGHOUSE_INSIDE);
 
 	if (wall || doghouse) {
 		return false;
 	}
-	if (crawlway && !player.getIsCreeping()) {
+	if ((crawlway || doghouseInside) && !entity.getIsCreeping()) {
 		return false;
 	}
 	return true;
@@ -206,7 +222,7 @@ bool Game::canMoveRight(Entity& entity, float dt) {
 bool Game::canMoveRightObject(DynamicObject& object, float dt) {
 	Position o = object.getPosition();
 	Size os = object.getSize();
-	float futObjX = o.x + os.width + player.getNormalSpeed() * dt;
+	float futObjX = o.x + os.width + player.getSpeed() * dt;
 	
 	int tileX = futObjX / map.TILE_SIZE;
 	int tileTop = (o.y - 1) / map.TILE_SIZE;
@@ -218,16 +234,18 @@ bool Game::canMoveRightObject(DynamicObject& object, float dt) {
 	TileType bottom = map.getType(tileX, tileBottom);
 
 	bool wall = (insideTop && insideBottom) && (top == WALLS || bottom == WALLS);
+	bool doghouse = (insideTop && insideBottom) && (top == DOGHOUSE || bottom == DOGHOUSE);
+	
 
-	if (wall) {
+	if (wall || doghouse) {
 		return false;
 	}
 	return true;
 } 
-bool Game::canMoveLeftObject(DynamicObject& object) {
+bool Game::canMoveLeftObject(DynamicObject& object, float dt) {
 	Position o = object.getPosition();
 	Size os = object.getSize();
-	float futObjX = o.x + player.getNormalSpeed();
+	float futObjX = o.x + player.getSpeed() * dt;
 
 	int tileX = futObjX / map.TILE_SIZE;
 	int tileTop = (o.y - 1) / map.TILE_SIZE;
@@ -279,24 +297,9 @@ bool Game::canCreep() {
 	return false;
 }
 
-bool Game::canCrawlThrough() {
-	Position p = player.getPosition();
-	Size s = player.getSize();
-	float dx = 2.f;
-	int tileX = (p.x + s.width + dx) / map.TILE_SIZE;
-	int tileBottom = (p.y + s.height - 2) / map.TILE_SIZE;
-
-	bool insideBottom = map.inside(tileX, tileBottom);
-	bool creepBottom = insideBottom && map.getType(tileX, tileBottom) == CRAWLWAY;
-	
-	if (player.getIsCreeping() && creepBottom) {
-		return true;
-	}
-	return false;
-}
-bool Game::canStandUp(Player& player) {
-	Position p = player.getPosition();
-	Size s = player.getSize();
+bool Game::canStandUp(Entity& entity) {
+	Position p = entity.getPosition();
+	Size s = entity.getSize();
 	int leftTileX = (p.x - 1) / map.TILE_SIZE;
 	int rightTileX = (p.x + s.width - 1) / map.TILE_SIZE;
 	int tileY = (p.y - 1) / map.TILE_SIZE;
@@ -318,6 +321,65 @@ bool Game::canInteraction(Player& player, DynamicObject& object) {
 	return false;
 }
 
+void Game::checkDogEvent() {
+	if (InsideDoghouse(player)) {
+		if (dog.getDogState() == SITTING) {
+			dogEvent = true;
+			dog.setDogState(RUNNING);
+			std::cout << "work \n";
+			std::cout << "event: " << dogEvent << std::endl;
+			state = INTRO;
+		}				
+	}
+}
+void Game::autoDogEvent(float dt) {
+	if (dogEvent) {
+		if (canMoveLeft(player, dt) && canMoveLeft(dog, dt)) {
+			Position p = player.getPosition();
+			Position d = dog.getPosition();
+			player.move(-player.getSpeed() * dt);			
+			if (InsideDoghouse(dog)) {
+				dog.setIsCreeping(true);
+			}
+			else {
+				dog.setIsCreeping(false);
+			}
+			dog.move(-dog.getSpeed() * dt);
+			if (d.x <= abs(dog.getLimitTerritory())) {
+				dog.move(0.f);
+				player.move(0.f);
+				dogEvent = false;
+				state = PLAY;
+			}			
+		}
+	}
+}
+void Game::dogIsBarking() {
+	Position p = player.getPosition();
+	Position d = dog.getPosition();
+	if (p.x <= player.getDogsTerritory() && std::abs(d.x - dog.getLimitTerritory()) < 5) {
+		dog.setDogState(BARKING);
+	}
+}
+bool Game::InsideDoghouse(Entity& entity) {
+	Position p = entity.getPosition();
+	Size s = entity.getSize();
+
+	int leftSide = (p.x - 1) / map.TILE_SIZE;
+	int rightSide = (p.x + s.width - 1) / map.TILE_SIZE;
+	int sideY = (p.y + s.height - 1) / map.TILE_SIZE;
+
+	bool insideLeft = map.inside(leftSide, sideY);
+	bool insideRight = map.inside(rightSide, sideY);
+
+	bool doghouse = (insideLeft || insideRight) && (map.getType(leftSide, sideY) == DOGHOUSE_INSIDE || map.getType(rightSide, sideY) == DOGHOUSE_INSIDE);
+
+	if (doghouse) {
+		return true;
+	}
+	return false;
+}
+
 void Game::play() {
 	windowSize size;
 	sf::RenderWindow window(sf::VideoMode(size.width, size.height), "Test");
@@ -331,9 +393,11 @@ void Game::play() {
 			if (event.type == sf::Event::Closed)
 				window.close();
 		}
+		
 		if (state == INTRO) {
 			//rushEnemy();
 			autoMovePlayer(dt);
+			autoDogEvent(dt);
 		}
 		if (state == PLAY) {
 			input(dt);
