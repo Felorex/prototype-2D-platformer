@@ -3,7 +3,7 @@
 
 Enemy::Enemy() {
 	pos.x = 50.f;
-	pos.y = 100.f;
+	pos.y = 600.f;
 	size.width = 25.f;
 	size.height = 40.f;
 	rushSpeedValue = 0.002f;
@@ -29,5 +29,11 @@ void Enemy::rushSpeed() {
 	horizontalSpeed -= rushSpeedValue;
 	if (horizontalSpeed <= 0) {
 		horizontalSpeed = 0;
+	}
+}
+float Enemy::getSpeed() {
+	return horizontalSpeed -= rushSpeedValue;
+	if (horizontalSpeed <= 0) {
+		return 0;
 	}
 }
