@@ -79,7 +79,15 @@ void TileMap::Doghouse(int x, int y, float width, float height) {
 	for (int i = startY; i < endY; i++) {
 		for (int j = startX; j < endX; j++) {
 			if (inside(j, i)) {
-				tiles[i][j].setType(DOGHOUSE);
+				if (i == endY - 1) {
+					tiles[i][j].setType(DOGHOUSE_INSIDE);
+				}
+				else if (i == startY) {
+					tiles[i][j].setType(DOGHOUSE_ROOF);
+				}
+				else {
+					tiles[i][j].setType(DOGHOUSE);
+				}				
 			}
 		}
 	}
@@ -95,7 +103,7 @@ void TileMap::drawMap(sf::RenderWindow& window){
 			else if (tiles[y][x].getType() == CRAWLWAY) {
 				rect.setFillColor(sf::Color::White);
 			}
-			else if (tiles[y][x].getType() == DOGHOUSE) {
+			else if (tiles[y][x].getType() == DOGHOUSE || tiles[y][x].getType() == DOGHOUSE_ROOF || tiles[y][x].getType() == DOGHOUSE_INSIDE) {
 				rect.setFillColor(sf::Color::Cyan);
 			}
 			else {
