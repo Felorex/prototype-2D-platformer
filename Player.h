@@ -13,20 +13,17 @@ public:
 	void update(float dt) override;
 	void jump();
 	void draw(sf::RenderWindow& window) override;
-	void creep();
+	void creep() override;
+	void setIsCreeping(bool creeping) override;
 	void drRect();
-	void setIsCreeping(bool creep);
-	bool getIsCreeping();
 	bool getIsInteracting();
 	void setIsInteracting(bool interact);
-	float getNormalSpeed();
-	float deltaX;
+	float getSpeed() override;
 	float getCreepSize();
+	float getDogsTerritory();
 private:
+	float dogsTerritory;
 	float normalSpeed;
-	float normalHeight;
-	float creepHeight;
-	bool isCreeping;
 	bool isInteracting;
 	float jumpForce;
 	sf::RectangleShape rect; 
