@@ -34,9 +34,24 @@ void Entity::setSize(float width, float height) {
 	size.height = height;
 }
 void Entity::update(float dt) {
+	previousPos = getPosition();
 	velocityY += gravity * dt;
 	pos.y += velocityY * dt;
 }
 void Entity::draw(sf::RenderWindow& window) {
 	// Base entity does not have a visual representation
+}
+void Entity::creep() {
+	if (isCreeping) {
+		setSize(size.width, creepHeight);
+	}
+	else {
+		setSize(size.width, normalHeight);
+	}
+}
+void Entity::setIsCreeping(bool creep) {
+	isCreeping = creep;
+}
+bool Entity::getIsCreeping() {
+	return isCreeping;
 }
