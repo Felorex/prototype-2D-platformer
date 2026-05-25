@@ -11,7 +11,7 @@ public:
 	void update(float dt) override;
 	void draw(sf::RenderWindow& window) override;
 	void rushSpeed();
-
+	float getSpeed() override;
 private:
 	float horizontalSpeed;
 	float rushSpeedValue;
