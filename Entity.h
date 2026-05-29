@@ -35,14 +35,18 @@ class Entity {
 		virtual void setIsCreeping(bool creeping);
 		bool getIsCreeping();
 		virtual float getSpeed() = 0;
+		float getFrameMoveX();
 protected:
 	    Size size;
 	    Position pos;
 		float velocityY;
+		float velocityX;
 		float gravity;
+		float framMoveX;
 		bool isOnGround;
 		float normalHeight;
 		float creepHeight;
 		bool isCreeping;
+
 };
 #endif // !ENFITY_H
