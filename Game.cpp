@@ -5,7 +5,6 @@
 Game::Game(): player(), map(64,30) {
 	state = INTRO;
 	intro = true;
-	dogEvent = false;
 	map.floor();
 	map.walls();
 	map.platform(20, 15, 2, 13);
@@ -19,49 +18,48 @@ Game::Game(): player(), map(64,30) {
 }
 void Game::autoMovePlayer(float dt) {
 	if (intro) {
-		std::cout << "wr\n";
-		if (canMoveRight(player, dt)) {
-			player.move(player.getSpeed() * dt); 
+		if (canMoveRight(player)) {
+			player.move(player.getSpeed()); 
 			Position p = player.getPosition();
 			if (p.x >= 500) {
 				player.move(0.f);
 				intro = false;
 				state = PLAY;
-				std::cout << "intro " << intro << std::endl;
 			}
 		}
 	}	
 }
-void Game::input(float dt) {
+void Game::input() {
+	player.move(0.f);
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {		
-		if (canInteraction(player, object) && canMoveRightObject(object, dt) && canMoveRight(player, dt)) {
-			player.move(player.getSpeed() * dt);
-			object.move(player.getSpeed() * dt);
+		if (canInteraction(player, object) && canMoveRightObject(object) && canMoveRight(player)) {
+			player.move(player.getSpeed());
+			object.move(player.getSpeed());
 		}
 		else {
-			if (canInteraction(player, object) && !canMoveRightObject(object, dt)) {
+			if (canInteraction(player, object) && !canMoveRightObject(object)) {
 				player.move(0.f);
 			}
 			else {
-				if (canMoveRight(player, dt)) {
-					player.move(player.getSpeed() * dt);
+				if (canMoveRight(player)) {
+					player.move(player.getSpeed());
 				}				
 			}
 		}
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
 		
-		if (canInteraction(player, object) && canMoveLeftObject(object, dt) && canMoveLeft(player, dt)) {
-			player.move(-player.getSpeed() * dt);
-			object.move(-player.getSpeed() * dt);
+		if (canInteraction(player, object) && canMoveLeftObject(object) && canMoveLeft(player)) {
+			player.move(-player.getSpeed());
+			object.move(-player.getSpeed());
 		}
 		else {
-			if (canInteraction(player, object) && !canMoveLeftObject(object, dt)) {
+			if (canInteraction(player, object) && !canMoveLeftObject(object)) {
 				player.move(0.f);
 			}
 			else {
-				if (canMoveLeft(player, dt)) {
-					player.move(-player.getSpeed() * dt);
+				if (canMoveLeft(player)) {
+					player.move(-player.getSpeed());
 				}	
 			}
 		}
@@ -77,6 +75,14 @@ void Game::creepLogic() {
 	else {
 		player.setIsCreeping(false);
 	}
+}
+void Game::CreepLogicDog() {
+	if (InsideDoghouse(dog)) {
+		dog.setIsCreeping(true);
+	}
+	else {
+		dog.setIsCreeping(false);
+	}	
 }
 void Game::drawGame(sf::RenderWindow& window) {
 	window.clear();
@@ -98,16 +104,19 @@ void Game::update(float dt) {
 	checkCollision(enemy);
 	checkCollision(object);
 	checkCollision(dog);
-	canMoveLeft(enemy, dt);
-	canMoveRight(enemy, dt);
-	canMoveLeft(object, dt);
-	canMoveRight(object, dt);
-	canMoveLeft(dog, dt);
-	canMoveRight(dog, dt);
+	canMoveLeft(enemy);
+	canMoveRight(enemy);
+	canMoveLeft(object);
+	canMoveRight(object);
+	canMoveLeft(dog);
+	canMoveRight(dog);
+
 
 	creepLogic();
+	CreepLogicDog();
 	checkDogEvent();
-	dogIsBarking();
+	canBit();
+
 	checkCollisionForObjects(player, object);
 	camera.updateCamera(player.getPosition(), map);
 }
@@ -158,16 +167,15 @@ void Game::checkCollisionForObjects(Entity& e1, Entity& e2) {
 	bool landedFromTop = e1.getVelocityY() > 0 && prv1 <= top2 && bottom1 >= top2 && overlapX && falling < 10.f;
 
 	if (landedFromTop){
-		//(e1.getVelocityY() > 0 && ((prv1 < top2) && (bottom1 >= top2)) && ((left1 <= right2) && (right1 >= left2))) {
 		e1.setPosition(p1.x, top2 - s1.height);
 		e1.setVelocityY(0);
 		e1.setOnGround(true);
 	}
 }
-bool Game::canMoveLeft(Entity& entity, float dt) {
+bool Game::canMoveLeft(Entity& entity) {
 	Position p = entity.getPosition();
 	Size s = entity.getSize();
-	float dx = -entity.getSpeed() * dt;
+	float dx = - 2;
 	int tileX = (p.x + dx - 1) / map.TILE_SIZE;
 	int tileTop = (p.y - 1) / map.TILE_SIZE;
 	int tileBottom = (p.y + s.height - 2) / map.TILE_SIZE;
@@ -192,10 +200,10 @@ bool Game::canMoveLeft(Entity& entity, float dt) {
 	}
 	return true;
 }
-bool Game::canMoveRight(Entity& entity, float dt) {
+bool Game::canMoveRight(Entity& entity) {
 	Position p = entity.getPosition();
 	Size s = entity.getSize();
-	float dx = entity.getSpeed() * dt;
+	float dx = 2;
 	int tileX = (p.x + s.width + dx) / map.TILE_SIZE;
 	int tileTop = (p.y - 1) / map.TILE_SIZE;
 	int tileBottom = (p.y + s.height - 2) / map.TILE_SIZE;
@@ -219,10 +227,10 @@ bool Game::canMoveRight(Entity& entity, float dt) {
 	return true;
 }
  
-bool Game::canMoveRightObject(DynamicObject& object, float dt) {
+bool Game::canMoveRightObject(DynamicObject& object) {
 	Position o = object.getPosition();
 	Size os = object.getSize();
-	float futObjX = o.x + os.width + player.getSpeed() * dt;
+	float futObjX = o.x + os.width + object.getFrameMoveX();
 	
 	int tileX = futObjX / map.TILE_SIZE;
 	int tileTop = (o.y - 1) / map.TILE_SIZE;
@@ -242,10 +250,10 @@ bool Game::canMoveRightObject(DynamicObject& object, float dt) {
 	}
 	return true;
 } 
-bool Game::canMoveLeftObject(DynamicObject& object, float dt) {
+bool Game::canMoveLeftObject(DynamicObject& object) {
 	Position o = object.getPosition();
 	Size os = object.getSize();
-	float futObjX = o.x + player.getSpeed() * dt;
+	float futObjX = o.x - object.getFrameMoveX();
 
 	int tileX = futObjX / map.TILE_SIZE;
 	int tileTop = (o.y - 1) / map.TILE_SIZE;
@@ -322,45 +330,27 @@ bool Game::canInteraction(Player& player, DynamicObject& object) {
 }
 
 void Game::checkDogEvent() {
-	if (InsideDoghouse(player)) {
-		if (dog.getDogState() == SITTING) {
-			dogEvent = true;
+	dog.setTarget(&player);
+	if (interact.playerInsideTerritory(player, dog)) {
+		if (dog.getDogState() != RUNNING) {
 			dog.setDogState(RUNNING);
-			std::cout << "work \n";
-			std::cout << "event: " << dogEvent << std::endl;
-			state = INTRO;
-		}				
-	}
-}
-void Game::autoDogEvent(float dt) {
-	if (dogEvent) {
-		if (canMoveLeft(player, dt) && canMoveLeft(dog, dt)) {
-			Position p = player.getPosition();
-			Position d = dog.getPosition();
-			player.move(-player.getSpeed() * dt);			
-			if (InsideDoghouse(dog)) {
-				dog.setIsCreeping(true);
-			}
-			else {
-				dog.setIsCreeping(false);
-			}
-			dog.move(-dog.getSpeed() * dt);
-			if (d.x <= abs(dog.getLimitTerritory())) {
-				dog.move(0.f);
-				player.move(0.f);
-				dogEvent = false;
-				state = PLAY;
-			}			
 		}
 	}
 }
-void Game::dogIsBarking() {
-	Position p = player.getPosition();
-	Position d = dog.getPosition();
-	if (p.x <= player.getDogsTerritory() && std::abs(d.x - dog.getLimitTerritory()) < 5) {
-		dog.setDogState(BARKING);
+void Game::autoDogEvent() {
+	if ((player.getIsScared() == true) && (player.getPosition().x <= player.getDogsTerritory())) {
+		player.setIsScared(false);
+		state = PLAY;
+	}	
+}
+void Game::canBit() {
+	dog.setTarget(&player);
+	if (interact.canBiting(player, dog)) {
+		player.setIsScared(true);
+		state = INTRO;
 	}
 }
+
 bool Game::InsideDoghouse(Entity& entity) {
 	Position p = entity.getPosition();
 	Size s = entity.getSize();
@@ -397,10 +387,11 @@ void Game::play() {
 		if (state == INTRO) {
 			//rushEnemy();
 			autoMovePlayer(dt);
-			autoDogEvent(dt);
+			autoDogEvent();
 		}
 		if (state == PLAY) {
-			input(dt);
+			input();
+			
 			//player.deltaX = player.getPosition().x - player.previousPos.x;
 		}
 		//player.drRect();
