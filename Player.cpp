@@ -11,15 +11,19 @@ Player::Player() {
 	rect.setSize(sf::Vector2f(size.width, size.height));
 	pos.x = 50.f;
 	pos.y = 800.f;
-
+	scared = false;
 	isInteracting = false;
 	normalSpeed = 200.f;
-	dogsTerritory = 1380.f;
+	scaredSpeed = 260.f;
+	dogsTerritory = 1300.f;
 }
 float Player::getDogsTerritory() {
 	return dogsTerritory;
 }
 float Player::getSpeed() {
+	if (scared) {
+		return scaredSpeed;
+	}
 	return normalSpeed;
 }
 void Player::jump() {
@@ -29,9 +33,9 @@ void Player::jump() {
 	}
 }
 void Player::update(float dt) {
-	velocityY += gravity * dt;
+	Entity::update(dt);
 
-	pos.y += velocityY * dt;
+	autoMoveToSafePlace();
 
 	rect.setPosition(pos.x,pos.y);
 	rect.setFillColor(sf::Color::Red);
@@ -66,4 +70,18 @@ void Player::draw(sf::RenderWindow& window) {
 }
 float Player::getCreepSize() {
 	return creepHeight;
+}
+bool Player::getIsScared() {
+	return scared;
+}
+void Player::setIsScared(bool scared) {
+	this->scared = scared;
+}
+void Player::autoMoveToSafePlace() {
+	if (scared) {
+		move(-getSpeed());
+		if (pos.x <= dogsTerritory) {
+			move(0.f);
+		}
+	}	
 }
