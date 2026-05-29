@@ -9,8 +9,9 @@ DynamicObject::DynamicObject() {
 }
 
 void DynamicObject::update(float dt) {
-	velocityY += gravity * dt;
-	pos.y += velocityY * dt;
+	Entity::update(dt);
+
+	velocityX = 0;
 
 	shape.setPosition(pos.x, pos.y);
 	shape.setFillColor(sf::Color::Black);
@@ -18,4 +19,7 @@ void DynamicObject::update(float dt) {
 
 void DynamicObject::draw(sf::RenderWindow& window) {
 	window.draw(shape);
+}
+float DynamicObject::getSpeed() {
+	return 0;
 }
