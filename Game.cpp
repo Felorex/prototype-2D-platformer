@@ -146,31 +146,33 @@ void Game::checkCollision(Entity& entity) {
 	}
 }
 void Game::checkCollisionForObjects(Entity& e1, Entity& e2) {
-	Position p1 = e1.getPosition();
-	Position p2 = e2.getPosition();
-	Size s1 = e1.getSize();
-	Size s2 = e2.getSize();
-	float top1 = p1.y;
-	float top2 = p2.y; 
-	float bottom1 = p1.y + s1.height;
-	float bottom2 = p2.y + s2.height;
-	float left1 = p1.x;
-	float left2 = p2.x;
-	float right1 = p1.x + s1.width;
-	float right2 = p2.x + s2.width;
+  Position p1 = e1.getPosition();
+  Position p2 = e2.getPosition();
+  Size s1 = e1.getSize();
+  Size s2 = e2.getSize();
+  float top1 = p1.y;
+  float top2 = p2.y; 
+  float bottom1 = p1.y + s1.height;
+  float bottom2 = p2.y + s2.height;
+  float left1 = p1.x;
+  float left2 = p2.x;
+  float right1 = p1.x + s1.width;
+  float right2 = p2.x + s2.width;
 
-	float prv1 = e1.previousPos.y + s1.height;
+  float prv1 = e1.previousPos.y + s1.height;
 
-	float falling = bottom1 - top2;
-	bool overlapX = right1 > left2 && left1 < right2;
+  float falling = bottom1 - top2;
+  bool overlapX = right1 > left2 && left1 < right2;
+  std::cout << e1.getVelocityY() << "\n";
+  bool landedFromTop = e1.getVelocityY() > 0 && prv1 <= top2 && bottom1 >= top2 && overlapX; //&& falling < 10.f;
 
-	bool landedFromTop = e1.getVelocityY() > 0 && prv1 <= top2 && bottom1 >= top2 && overlapX && falling < 10.f;
+  bool standingOnTop = bottom1 >= top2 - 2.f && bottom1 <= top2 + 5.f && overlapX && e1.getVelocityY() >= 0;
 
-	if (landedFromTop){
-		e1.setPosition(p1.x, top2 - s1.height);
-		e1.setVelocityY(0);
-		e1.setOnGround(true);
-	}
+  if (landedFromTop || standingOnTop){
+    e1.setPosition(p1.x, top2 - s1.height);
+    e1.setVelocityY(0);
+    e1.setOnGround(true);
+  }
 }
 bool Game::canMoveLeft(Entity& entity) {
 	Position p = entity.getPosition();
