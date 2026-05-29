@@ -8,9 +8,10 @@ public:
 	DynamicObject();
 	void update(float dt) override;
 	void draw(sf::RenderWindow& window) override;
-
+	float getSpeed() override;
 private:
 	sf::RectangleShape shape;
 };
+
 #endif // !MOVEDOBJECT_H
 
