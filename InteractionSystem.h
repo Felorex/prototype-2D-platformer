@@ -12,6 +12,7 @@ static bool equal(float a, float b, float epsilon = 1.f) {
 class InteractionSystem {
 public:
 	bool canInteract(Player& player, DynamicObject& object);
+	bool playerInsideTerritory(Player& player, Dog& dog);
 	bool canBiting(Player& player, Dog& dog);
 };
 #endif // !INTRACTIONSYSTEM_H
