@@ -22,14 +22,14 @@ enum GameState {
 class Game {
 public:
 	Game();	
-	void input(float dt);
+	void input();
 	void drawGame(sf::RenderWindow& window);
 	void play();
 	void update(float dt);
-	bool canMoveLeft(Entity& entity, float dt);
-	bool canMoveRight(Entity& entity, float dt);
-	bool canMoveRightObject(DynamicObject& object, float dt);
-	bool canMoveLeftObject(DynamicObject& object, float dt);
+	bool canMoveLeft(Entity& entity);
+	bool canMoveRight(Entity& entity);
+	bool canMoveRightObject(DynamicObject& object);
+	bool canMoveLeftObject(DynamicObject& object);
 	bool canJump();
 	void creep();
 	bool canCreep();
@@ -41,11 +41,11 @@ public:
 
 	void checkDogEvent();
 	bool InsideDoghouse(Entity& entity);
-	void autoDogEvent(float dt);
-
-	void dogIsBarking();
+	void autoDogEvent();
+	void canBit();
 
 	void creepLogic();
+	void CreepLogicDog();
 private:
 	GameState state;
 	Player player;
@@ -58,6 +58,6 @@ private:
 	sf::Clock deltaClock;
 
 	bool intro;
-	bool dogEvent;
 };
+
 #endif // !GAME_H
