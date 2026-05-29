@@ -19,6 +19,7 @@ Dog::Dog() {
 	animationTimer = 0.f;
 	visualOffsetY = 0.f;
 	rect.setOrigin(size.width / 2.f, size.height / 2.f);
+	target = nullptr;
 }
 
 float Dog::getSpeed() {
@@ -29,22 +30,17 @@ float Dog::getSpeed() {
 }
 
 void Dog::update(float dt) { 
-	velocityY += gravity * dt;
-
-	pos.y += velocityY * dt;
+	Entity::update(dt);
 
 	switch (state) {
 	case SITTING:
 		creep();
 		break;
-	case BITING:
-		biting();
-		break;
 	case BARKING:
 		barking(dt);
 		break;
 	case RUNNING:
-		running(dt);
+		cameLimitTerritory();
 		break;
 	case ALERT:
 		alert();
@@ -59,19 +55,40 @@ void Dog::draw(sf::RenderWindow& window) {
 	window.draw(rect);
 }
 void Dog::barking(float dt) {
-	animationTimer += dt;
-	rotation = 20 + std::sin(animationTimer * 20.f) * 5.f;
+	if (std::abs(getLimitTerritory() - pos.x) < 3) {
+		animationTimer += dt;
+		rotation = 20 + std::sin(animationTimer * 20.f) * 5.f;
 
-	visualOffsetY = -10.f;
+		visualOffsetY = -10.f;
+	}	
 }
-void Dog::biting() {
-
+void Dog::setTarget(Entity* entity) {
+	if (entity != nullptr) {
+		target = entity;
+	}
 }
-void Dog::running(float dt) {
-	
+void Dog::cameLimitTerritory() {
+	following();
+	if (pos.x <= getLimitTerritory()) {
+		move(0.f);
+		state = BARKING;
+	}
+}
+void Dog::following() {
+	Position entityPos = target->getPosition();
+	float distance = entityPos.x - pos.x;
+	if (std::abs(distance) < 10) {
+		move(0.f);
+	}
+	else if (distance < 0) {
+		move(-getSpeed());
+	}
+	else {
+		move(getSpeed());
+	}
 }
 void Dog::alert() {
-
+	visualOffsetY = 0.f;
 }
 void Dog::setIsCreeping(bool creeping) {
 	isCreeping = creeping;
