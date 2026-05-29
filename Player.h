@@ -21,12 +21,19 @@ public:
 	float getSpeed() override;
 	float getCreepSize();
 	float getDogsTerritory();
+	bool getIsScared();
+	void setIsScared(bool scared);
+
+	void autoMoveToSafePlace();
+
 private:
 	float dogsTerritory;
 	float normalSpeed;
+	float scaredSpeed;
 	bool isInteracting;
 	float jumpForce;
 	sf::RectangleShape rect; 
+	bool scared;
 	
 };
 #endif // !PLAYER_H
