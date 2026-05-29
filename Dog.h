@@ -18,8 +18,8 @@ public:
 	void update(float dt) override;
 	void draw(sf::RenderWindow& window) override;
 	void barking(float dt);
-	void biting();
-	void running(float dt);
+	void following();
+	void cameLimitTerritory();
 	void alert();
 	void setIsCreeping(bool creeping) override;
 	void creep() override;
@@ -29,7 +29,12 @@ public:
 	float getDistance();
 	float getStartX();
 	float getLimitTerritory();
+
+	void setTarget(Entity* entity);
+
 private:
+	Entity* target;
+
 	float startX;
 	float distance;
 	float limitTerritory;
