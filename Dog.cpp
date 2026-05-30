@@ -40,6 +40,7 @@ void Dog::update(float dt) {
 		barking(dt);
 		break;
 	case RUNNING:
+		following();
 		cameLimitTerritory();
 		break;
 	case ALERT:
@@ -68,16 +69,20 @@ void Dog::setTarget(Entity* entity) {
 	}
 }
 void Dog::cameLimitTerritory() {
-	following();
-	if (pos.x <= getLimitTerritory()) {
+	Position targetPos = target->getPosition();
+	if ((std::abs(getLimitTerritory() - pos.x) < 3) && targetPos.x < getLimitTerritory()) {
 		move(0.f);
 		state = BARKING;
 	}
 }
 void Dog::following() {
+	rotation = 0;
+	visualOffsetY = 0;
 	Position entityPos = target->getPosition();
 	float distance = entityPos.x - pos.x;
-	if (std::abs(distance) < 10) {
+	std::cout << "Follow\n";
+	std::cout << "pos " << pos.x << "\n";
+	if (std::abs(distance) < 20) {
 		move(0.f);
 	}
 	else if (distance < 0) {
