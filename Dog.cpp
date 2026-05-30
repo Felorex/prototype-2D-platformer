@@ -38,6 +38,7 @@ void Dog::update(float dt) {
 		break;
 	case BARKING:
 		barking(dt);
+		startAlert(dt);
 		break;
 	case RUNNING:
 		following();
@@ -69,31 +70,48 @@ void Dog::setTarget(Entity* entity) {
 	}
 }
 void Dog::cameLimitTerritory() {
-	Position targetPos = target->getPosition();
-	if ((std::abs(getLimitTerritory() - pos.x) < 3) && targetPos.x < getLimitTerritory()) {
-		move(0.f);
-		state = BARKING;
-	}
+  Position targetPos = target->getPosition();
+  if ((std::abs(getLimitTerritory() - pos.x) < 3) && targetPos.x < getLimitTerritory()) {
+    move(0.f);
+    state = BARKING;
+  }
 }
 void Dog::following() {
-	rotation = 0;
-	visualOffsetY = 0;
-	Position entityPos = target->getPosition();
-	float distance = entityPos.x - pos.x;
-	std::cout << "Follow\n";
-	std::cout << "pos " << pos.x << "\n";
-	if (std::abs(distance) < 20) {
-		move(0.f);
-	}
-	else if (distance < 0) {
-		move(-getSpeed());
-	}
-	else {
-		move(getSpeed());
-	}
+  rotation = 0;
+  visualOffsetY = 0;
+  Position entityPos = target->getPosition();
+  float distance = entityPos.x - pos.x;
+  if (std::abs(distance) < 20) {
+    move(0.f);
+  }
+  else if (distance < 0) {
+    move(-getSpeed());
+  }
+  else {
+    move(getSpeed());
+  }
+}
+void Dog::startAlert(float dt) {
+  Position targetPos = target->getPosition();
+  if (state == BARKING && targetPos.x <= alertLimit) {
+    visualOffsetY = 0.f;
+    rotation = 0;
+    alertTimer += dt;
+    if (alertTimer > 3 ) {
+      state = ALERT;
+      alertTimer = 0.f;
+    }    
+  }
+  else {
+    alertTimer = 0.f;
+  }
 }
 void Dog::alert() {
-	visualOffsetY = 0.f;
+  move(getSpeed());
+  if (std::abs(startX - pos.x) < 3) {
+    state = SITTING;
+    move(0.f);
+  }
 }
 void Dog::setIsCreeping(bool creeping) {
 	isCreeping = creeping;
