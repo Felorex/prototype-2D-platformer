@@ -1,0 +1,12 @@
+.vs/
+x64/
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+*.pdb
+*.ipch
+*.sdf
+*.opensdf
+*.suo
+*.user

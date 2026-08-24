@@ -1,0 +1,39 @@
+#ifndef PLAYER_H
+#define PLAYER_H
+
+#include "Carrier.h"
+
+#include <SFML/Graphics.hpp>
+
+
+
+class Player: public Carrier {
+public:
+	Player();
+	void update(float dt) override;
+	void jump();
+	void draw(sf::RenderWindow& window) override;
+	void creep() override;
+	void setIsCreeping(bool creeping) override;
+	void drRect();
+	bool getIsInteracting();
+	void setIsInteracting(bool interact);
+	float getSpeed() override;
+	float getCreepSize();
+	float getDogsTerritory();
+	bool getIsScared();
+	void setIsScared(bool scared);
+
+	void autoMoveToSafePlace();
+
+private:
+	float dogsTerritory;
+	float normalSpeed;
+	float scaredSpeed;
+	bool isInteracting;
+	float jumpForce;
+	sf::RectangleShape rect; 
+	bool scared;
+	
+};
+#endif // !PLAYER_H
