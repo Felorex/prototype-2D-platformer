@@ -45,6 +45,19 @@ void TileMap::walls() {
 		tiles[y][0].setType(WALLS);
 	}
 }
+void TileMap::Exit(int x, int y, float width, float height) {
+	int StatrX = x;
+	int StartY = y;
+	int EndX = static_cast<int>(x + width);
+	int EndY = static_cast<int>(y + height);
+	for (int i = StartY;i < EndY;i++) {
+		for (int j = StatrX;j < EndX;j++) {
+			if (inside(j, i)) {
+				tiles[i][j].setType(EXIT);
+			}
+		}
+	}
+}
 void TileMap::platform(int x, int y, float width, float height) {
 	int startX = x;
 	int startY = y;
@@ -105,6 +118,9 @@ void TileMap::drawMap(sf::RenderWindow& window){
 			}
 			else if (tiles[y][x].getType() == DOGHOUSE || tiles[y][x].getType() == DOGHOUSE_ROOF || tiles[y][x].getType() == DOGHOUSE_INSIDE) {
 				rect.setFillColor(sf::Color::Cyan);
+			}
+			else if (tiles[y][x].getType() == EXIT) {
+				rect.setFillColor(sf::Color(0, 255, 0, 100));
 			}
 			else {
 				rect.setFillColor(sf::Color::Blue);

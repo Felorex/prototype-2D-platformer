@@ -5,6 +5,7 @@
 #include "DynamicObject.h"
 #include "Dog.h"
 #include "Item.h"
+#include "Enemy.h"
 
 
 static bool equal(float a, float b, float epsilon = 2.f) {
@@ -16,6 +17,8 @@ public:
 	bool canInteract(Player& player, DynamicObject& object);
 	bool playerInsideTerritory(Player& player, Dog& dog);
 	bool canBiting(Player& player, Dog& dog);
+
+	bool canToCatch(Player& player, Enemy& enemy);
 
 	bool canTakeItem(Entity& player, Item& item);
 

@@ -4,9 +4,16 @@ Binaries/
 Intermediate/
 Saved/
 DerivedDataCache/
+Debug/
+Release/
 *.pdb
 *.ipch
 *.sdf
 *.opensdf
 *.suo
 *.user
+*.ttf
+*.obj
+*.exe
+*.log
+*.vcxproj.filters

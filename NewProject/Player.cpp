@@ -9,8 +9,8 @@ Player::Player() {
 	normalHeight = size.height;
 	creepHeight = size.height / 2;
 	rect.setSize(sf::Vector2f(size.width, size.height));
-	pos.x = 50.f;
-	pos.y = 800.f;
+	pos.x = 100.f;
+	pos.y = 900.f;
 	scared = false;
 	isInteracting = false;
 	normalSpeed = 200.f;
@@ -90,55 +90,3 @@ void Player::autoMoveToSafePlace() {
 	}	
 }
 
-/*
-Item* Player::getTargetItem() {
-	if (targetItem != nullptr) {
-		return targetItem;
-	}
-	return nullptr;
-}
-
-void Player::takingItem() {
-	if (targetItem != nullptr && targetItem->getState() == TAKING) {
-		Position targetPos = targetItem->getPosition();
-		targetItem->isTaking(takenItemSpeed);
-		float playerLeft = pos.x;
-		float playerRight = pos.x + size.width;
-		float playerTop = pos.y;
-		float itemLeft = targetPos.x;
-		float itemRight = targetPos.x + targetItem->getSize().width;
-		float itemTop = targetPos.y;
-
-		distanceItem = itemLeft - playerLeft;
-
-		if (targetPos.y <= playerTop + 10.f) {
-			targetItem->isTaking(0.f);
-			targetItem->setState(TAKEN);
-		}
-	}
-}
-void Player::moveWithItem() {
-	if (takenItem()) {
-		Position targetPos = targetItem->getPosition();
-		float playerLeft = pos.x;
-		float playerRight = pos.x + size.width;
-		float itemLeft = targetPos.x;
-		float itemRight = targetPos.x + targetItem->getSize().width;
-		targetItem->setPosition(pos.x + distanceItem, pos.y + 10.f);
-	}
-}
-bool Player::takenItem() {
-	if (targetItem != nullptr && targetItem->getState() == TAKEN) {
-		return true;
-	}
-	return false;
-}
-void Player::setTargetItem(Item* item) {
-	if (item != nullptr) {
-		targetItem = item;
-	}
-	else {
-		targetItem = nullptr;
-	}
-}
-*/

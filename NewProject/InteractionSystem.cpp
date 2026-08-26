@@ -65,6 +65,26 @@ bool InteractionSystem::canBiting(Player& player, Dog& dog) {
 	}
 	return false;
 }
+bool InteractionSystem::canToCatch(Player& player, Enemy& enemy) {
+	Position p = player.getPosition();
+	Size sp = player.getSize();
+	Position e = enemy.getPosition();
+	Size se = enemy.getSize();
+	float rightP = p.x + sp.width;
+	float leftP = p.x;
+	float rightE = e.x + se.width;
+	float leftE = e.x;
+	float bottomP = p.y + sp.height;
+	float bottomE = e.y + se.height;
+	float topP = p.y;
+	float topE = e.y;
+
+	if ((bottomE >= topP && topE <= bottomP) &&
+		(leftE <= leftP && rightE >= leftP) || (leftE <= rightP && rightE >= rightP)) {
+		return true;
+	}
+	return false;
+}
 bool InteractionSystem::canTakeItem(Entity& player, Item& item) {
 	Position p = player.getPosition();
 	Size sp = player.getSize();

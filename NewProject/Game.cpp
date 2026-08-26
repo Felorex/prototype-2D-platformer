@@ -3,37 +3,66 @@
 #include <iostream>
 
 Game::Game(): player(), map(64,30) {
-	state = INTRO;
-	intro = true;
+	state = MAINMENU;
+	intro = false;
 	isPressF = false;
+	IsExitOpen = false;
+	selectBut = 0;
 	map.floor();
 	map.walls();
 	map.platform(20, 15, 2, 13);
-	map.setCreepZone(20, 28, 3, 1);
+	map.setCreepZone(20, 28, 2, 1);
 	map.Doghouse(59, 25, 4, 4);
+	
 	//deltaX = 0;
 	//map.platform(0, 15, 15, 7);
 	//map.platform(15, 19, 1, 3);
 	//map.platform(16, 19, 3, 1);
 	//map.platform(14, 18, 2, 1);
 }
-void Game::PrintMenu() {
-	sf::Font font;
-	if (!font.loadFromFile("arial.ttf")) {
-		std::cout << "Error" << std::endl;
-		return;
+void Game::PrintMenu(sf::RenderWindow& window) {
+	
+	window.clear(sf::Color(24, 28, 43));
+
+	sf::Text StartButton("START GAME", font, 45);
+	sf::Text ExitButton("EXIT", font, 45);
+
+	float WindowWidth = window.getSize().x;
+
+	float StartX = (WindowWidth - StartButton.getGlobalBounds().width) / 2.f;
+	float ExitX = (WindowWidth - ExitButton.getGlobalBounds().width) / 2.f;
+
+	StartButton.setPosition(StartX, 200.f);
+	ExitButton.setPosition(ExitX, 320.f);
+
+	if (selectBut == 0) {
+		StartButton.setFillColor(sf::Color(255, 204, 0));
+		ExitButton.setFillColor(sf::Color(150, 150, 150));
 	}
-	if (MAINMENU) {
+	else {
+		StartButton.setFillColor(sf::Color(150, 150, 150));
+		ExitButton.setFillColor(sf::Color(255, 204, 0));
+	}
 
-		sf::Text StartButton;
-		StartButton.setFont(font);
-		StartButton.setString("START GAME");
-		StartButton.setCharacterSize(45);
-
-		sf::Text ExitButton;
-		ExitButton.setFont(font);
-		ExitButton.setString("EXIT");
-		ExitButton.setCharacterSize(45);
+	window.draw(StartButton);
+	window.draw(ExitButton);
+	window.display();
+}
+void Game::HandleInputMenu() {
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+		selectBut = 0;
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+		selectBut = 1;
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+		if (selectBut == 0) {
+			state = INTRO;
+			intro = true;
+		}
+		else {
+			state = GAMEOVER;
+		}
 	}
 }
 void Game::autoMovePlayer(float dt) {
@@ -45,9 +74,28 @@ void Game::autoMovePlayer(float dt) {
 				player.move(0.f);
 				intro = false;
 				state = PLAY;
+
+				enemy.setVisible(true);
 			}
 		}
 	}	
+}
+void Game::EnemyStartRush() {
+	if (enemy.getIsVisible()) {
+		if (canMoveRight(enemy)) {
+			enemy.move(enemy.getSpeed());
+			Position p = enemy.getPosition();
+		}
+		else {
+			enemy.move(0.f);
+		}
+	}
+}
+void Game::CanCatch() {
+	if (interact.canToCatch(player, enemy)) {
+		state = GAMEOVER;
+		GameOverClock.restart();
+	}
 }
 void Game::input() {
 	player.move(0.f);
@@ -87,6 +135,8 @@ void Game::input() {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && canJump()) {
 		player.jump();
 	}	
+
+	creepLogic();
 }
 void Game::creepLogic() {
 	if (canCreep() || !canStandUp(player)) {
@@ -138,7 +188,8 @@ void Game::update(float dt) {
 	canMoveLeft(dog);
 	canMoveRight(dog);
 
-	creepLogic();
+	EnemyStartRush();
+	CanCatch();
 
 	canUsingItem();
 
@@ -147,8 +198,13 @@ void Game::update(float dt) {
 	canBit();
 	distractDog();
 
+	CheckOpenExit();
+	PrintExit();
+
 	checkCollisionForObjects(player, object);
 	camera.updateCamera(player.getPosition(), map);
+
+	LevelEscape();
 }
 void Game::checkCollision(Entity& entity) {
 	Position p = entity.getPosition();
@@ -170,8 +226,6 @@ void Game::checkCollision(Entity& entity) {
 		entity.setOnGround(true);
 	}
 	else{
-	//else if(player.getVelocityY() > 0 && ((!map.inside(leftTileX, tileY)||!map.inside(rightTileX,tileY)) || 
-	//	(!map.getTile(leftTileX, tileY).isSolid)||!map.getTile(rightTileX, tileY).isSolid)) {
 		entity.setOnGround(false);
 	}
 }
@@ -194,7 +248,7 @@ void Game::checkCollisionForObjects(Entity& e1, Entity& e2) {
 	float falling = bottom1 - top2;
 	bool overlapX = right1 > left2 && left1 < right2;
 
-	bool landedFromTop = e1.getVelocityY() > 0 && prv1 <= top2 && bottom1 >= top2 && overlapX; //&& falling < 10.f;
+	bool landedFromTop = e1.getVelocityY() > 0 && prv1 <= top2 && bottom1 >= top2 && overlapX;
 
 	bool standingOnTop = bottom1 >= top2 - 2.f && bottom1 <= top2 + 5.f && overlapX && e1.getVelocityY() >= 0;
 
@@ -400,7 +454,7 @@ void Game::autoDogEvent() {
 	if ((player.getIsScared() == true) && (player.getPosition().x <= player.getDogsTerritory())) {
 		player.setIsScared(false);
 		state = PLAY;
-	}	
+	}
 }
 void Game::canBit() {
 	dog.setTarget(&player);
@@ -438,12 +492,105 @@ bool Game::InsideDoghouse(Entity& entity) {
 	}
 	return false;
 }
+void Game::CheckOpenExit() {
+	if (dog.getDogState() == DISTRACTED) {
+		IsExitOpen = true;
+	}
+}
+void Game::PrintExit() {
+	if (IsExitOpen) {
+		if (map.getType(63, 19) != EXIT) {
+			map.Exit(63, 19, 1, 3);
+		}
+
+	}
+}
+void Game::LevelEscape() {
+	Position p = player.getPosition();
+	Size s = player.getSize();
+	int leftTileX = p.x / map.TILE_SIZE;
+	int rightTileX = (p.x + s.width - 1) / map.TILE_SIZE;
+	int tileY = (p.y + s.height - 1) / map.TILE_SIZE;
+	bool insideLeft = map.inside(leftTileX, tileY);
+	bool insideRight = map.inside(rightTileX, tileY);
+	TileType Left = map.getType(leftTileX, tileY);
+	TileType Right = map.getType(rightTileX, tileY);
+
+	if ((insideLeft || insideRight) && (Left == EXIT || Right == EXIT)){
+		state = WIN;
+		GameOverClock.restart();
+	}	
+}
+void Game::GameOver(sf::RenderWindow& window) {
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape) || 
+		GameOverClock.getElapsedTime().asSeconds() >= 3.f) {
+		window.close();
+		return;
+	}
+
+	camera.initCamera(window);
+	camera.apply(window);
+
+	window.clear(sf::Color(20, 5, 5));
+
+	sf::Text EndText;
+	EndText.setFont(font);
+	EndText.setString("Game Over");
+	EndText.setCharacterSize(60);
+	EndText.setFillColor(sf::Color(255, 51, 51));
+
+	float WindowWeight = window.getSize().x;
+	float WindowHeight = window.getSize().y;
+
+	float TextX = (WindowWeight - EndText.getGlobalBounds().width) / 2;
+	float TextY = (WindowHeight - EndText.getGlobalBounds().height) / 2;
+
+	EndText.setPosition(TextX, TextY);
+
+	window.draw(EndText);
+	window.display();
+}
+void Game::WinGame(sf::RenderWindow& window) {
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape) ||
+		GameOverClock.getElapsedTime().asSeconds() >= 3.f) {
+		window.close();
+		return;
+	}
+
+	camera.initCamera(window);
+	camera.apply(window);
+
+	window.clear(sf::Color(10, 25, 15));
+
+	sf::Text EndText;
+	EndText.setFont(font);
+	EndText.setString("You WIN");
+	EndText.setCharacterSize(60);
+	EndText.setFillColor(sf::Color(50, 255, 100));
+
+	float WindowWeight = window.getSize().x;
+	float WindowHeight = window.getSize().y;
+
+	float TextX = (WindowWeight - EndText.getGlobalBounds().width) / 2;
+	float TextY = (WindowHeight - EndText.getGlobalBounds().height) / 2;
+
+	EndText.setPosition(TextX, TextY);
+
+	window.draw(EndText);
+	window.display();
+}
 
 void Game::play() {
 	windowSize size;
 	sf::RenderWindow window(sf::VideoMode(size.width, size.height), "Test");
 
+	if (!font.loadFromFile("arial.ttf")) {
+		std::cout << "Error" << std::endl;
+		return;
+	}
 	camera.initCamera(window);
+
+	
 
 	while (window.isOpen()) {
 		sf::Event event;
@@ -452,16 +599,30 @@ void Game::play() {
 			if (event.type == sf::Event::Closed)
 				window.close();
 		}
-		
+
 		if (state == INTRO) {
-			//rushEnemy();
 			autoMovePlayer(dt);
 			autoDogEvent();
 		}
 		if (state == PLAY) {
 			input();
 		}
-		update(dt);
-		drawGame(window);
+		if (state == INTRO || state == PLAY) {
+			update(dt);
+		}
+		
+		if (state == MAINMENU) {
+			HandleInputMenu();
+			PrintMenu(window);
+		}
+		else if (state == GAMEOVER) {
+			GameOver(window);
+		}
+		else if (state == WIN) {
+			WinGame(window);
+		}
+		else{
+			drawGame(window);
+		}
 	}
 }

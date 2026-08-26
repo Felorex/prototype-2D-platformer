@@ -12,9 +12,12 @@ public:
 	void draw(sf::RenderWindow& window) override;
 	void rushSpeed();
 	float getSpeed() override;
+	void setVisible(bool visible);
+	bool getIsVisible() const;
 private:
-	float horizontalSpeed;
-	float rushSpeedValue;
+	float speed;
 	sf::RectangleShape rect;
+
+	bool IsVisible;
 };
 #endif

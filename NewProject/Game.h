@@ -18,7 +18,8 @@ enum GameState {
 	MAINMENU,
 	INTRO,
 	PLAY,
-	GAMEOVER
+	GAMEOVER,
+	WIN
 };
 
 class Game {
@@ -41,6 +42,9 @@ public:
 	bool canInteraction(Player& player,DynamicObject& object);
 	bool canStandUp(Entity& entity);
 
+	void EnemyStartRush();
+	void CanCatch();
+
 	void checkDogEvent();
 	bool InsideDoghouse(Entity& entity);
 	void autoDogEvent();
@@ -53,8 +57,16 @@ public:
 	void creepLogic();
 	void CreepLogicDog();
 
-	void PrintMenu();
-	void GameOver();
+	void PrintMenu(sf::RenderWindow& window);
+	void HandleInputMenu();
+	
+	void CheckOpenExit();
+	void PrintExit();
+	void LevelEscape();
+	void GameOver(sf::RenderWindow& window);
+
+	void WinGame(sf::RenderWindow& window);
+
 private:
 	GameState state;
 	Player player;
@@ -65,12 +77,19 @@ private:
 	InteractionSystem interact;
 	Dog dog;
 	Item item;
+
 	sf::Clock deltaClock;
+	sf::Clock GameOverClock;
+
+	sf::Font font;
 
 	bool intro;
-	bool Start;
-	bool Exit;
+	bool IsExitOpen;
 	bool isPressF;
+
+	
+
+	int selectBut;
 };
 
 

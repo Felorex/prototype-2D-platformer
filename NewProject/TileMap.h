@@ -26,6 +26,7 @@ public:
 	Tile& getTile(int x, int y);
 	void floor();
 	void walls();
+	void Exit(int x, int y, float width, float height);
 	void platform(int x, int y, float width, float height);
 	void setCreepZone(int x, int y, float width, float height);
 	void Doghouse(int x, int y, float width, float height);

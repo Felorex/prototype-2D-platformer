@@ -9,8 +9,8 @@ Dog::Dog() {
 	size.height = 60;
 	normalHeight = size.height;
 	creepHeight = size.height / 2;
-	pos.x = 1940;
-	pos.y = 800;
+	pos.x = 1940.f;
+	pos.y = 900.f;
 	creepSpeed = 160.f;
 	runningSpeed = 195.f;
 	distance = 500.f;

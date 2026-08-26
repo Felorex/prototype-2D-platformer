@@ -7,7 +7,8 @@ enum TileType {
 	EMPTY,
 	DOGHOUSE,
 	DOGHOUSE_INSIDE,
-	DOGHOUSE_ROOF
+	DOGHOUSE_ROOF,
+	EXIT
 };
 
 class Tile {
