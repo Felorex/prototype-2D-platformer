@@ -24,6 +24,7 @@
     <ProjectGuid>{2e4e2dd8-5de5-4f1e-8a60-c693ea0a36ca}</ProjectGuid>
     <RootNamespace>NewProject</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Dog_platformer</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -145,8 +146,7 @@
     <ClCompile Include="DynamicObject.cpp" />
     <ClCompile Include="InteractionSystem.cpp" />
     <ClCompile Include="Item.cpp" />
-    <ClCompile Include="NewProject.cpp" />
-    <ClCompile Include="Platform.cpp" />
+    <ClCompile Include="Dog_platformer.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="TileMap.cpp" />
     <ClCompile Include="Tile.cpp" />
@@ -161,7 +161,6 @@
     <ClInclude Include="DynamicObject.h" />
     <ClInclude Include="InteractionSystem.h" />
     <ClInclude Include="Item.h" />
-    <ClInclude Include="Platform.h" />
     <ClInclude Include="TileMap.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Tile.h" />
