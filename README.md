@@ -55,15 +55,7 @@ Planned next steps, following the full game design document:
 
 ## Screenshots / Video
 
-
-
 https://github.com/user-attachments/assets/4c1aef20-6371-46b4-98f6-91e77f9d9709
-
-
-
-https://github.com/user-attachments/assets/a7a18571-dd62-432d-bb7d-6b1882e0e781
-
-
 
 \---
 
