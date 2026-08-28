@@ -62,6 +62,7 @@ void Game::HandleInputMenu() {
 		}
 		else {
 			state = GAMEOVER;
+			GameOverClock.restart();
 		}
 	}
 }
